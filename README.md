@@ -1,17 +1,23 @@
-# pry_final_parqueadero
+# Parqueadero Inteligente
 
-A new Flutter project.
+Aplicación Flutter para el control inteligente de parqueaderos.
 
-## Getting Started
+## Arquitectura
 
-This project is a starting point for a Flutter application.
+Clean Architecture + MVVM | Provider | GoRouter | Firebase | Material 3
 
-A few resources to get you started if this is your first Flutter project:
+## Stack
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- Flutter + Dart
+- Firebase Auth, Cloud Firestore, Storage
+- Provider (state management) · GoRouter (navegación)
+- dartz (Either) · get_it (DI)
+- Google Fonts: Outfit + Work Sans
+- mocktail (tests)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Setup
+
+1. Instalar dependencias: `flutter pub get`
+2. Configurar Firebase: `flutterfire configure`
+3. Correr tests: `flutter test --reporter expanded`
+4. Correr app: `flutter run`
