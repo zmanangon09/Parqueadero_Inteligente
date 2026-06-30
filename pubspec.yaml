@@ -1,0 +1,42 @@
+name: pry_final_parqueadero
+description: "Control Inteligente de Parqueaderos - Proyecto académico Flutter."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # Firebase
+  firebase_core: ^3.13.1
+  firebase_auth: ^5.5.4
+  cloud_firestore: ^5.6.6
+  firebase_storage: ^12.4.5
+
+  # Estado
+  provider: ^6.1.2
+
+  # Navegación
+  go_router: ^15.1.2
+
+  # Either / functional error handling
+  dartz: ^0.10.1
+
+  # Inyección de dependencias
+  get_it: ^8.0.3
+
+  # Tipografía
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
