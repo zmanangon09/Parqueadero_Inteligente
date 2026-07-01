@@ -8,4 +8,6 @@ abstract class ParqueaderoRepository {
     double lng,
     double radiusKm,
   );
+
+  Future<Either<Failure, ParqueaderoEntity>> getById(String id);
 }

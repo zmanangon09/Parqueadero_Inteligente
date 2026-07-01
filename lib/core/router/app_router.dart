@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 
 import '../../presentation/viewmodels/auth_viewmodel.dart';
 import '../../presentation/viewmodels/home_viewmodel.dart';
+import '../../presentation/viewmodels/parqueadero_detail_viewmodel.dart';
 import '../../presentation/views/auth/login_view.dart';
 import '../../presentation/views/auth/register_view.dart';
 import '../../presentation/views/home/home_view.dart';
+import '../../presentation/views/parking/parqueadero_detail_view.dart';
 import '../di/injection.dart';
 
 class AppRouter {
@@ -29,6 +31,16 @@ class AppRouter {
               create: (_) => sl<HomeViewModel>(),
               child: const HomeView(),
             ),
+          ),
+          GoRoute(
+            path: '/parking/:id',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return ChangeNotifierProvider<ParqueaderoDetailViewModel>(
+                create: (_) => sl<ParqueaderoDetailViewModel>(),
+                child: ParqueaderoDetailView(parqueaderoId: id),
+              );
+            },
           ),
         ],
       );

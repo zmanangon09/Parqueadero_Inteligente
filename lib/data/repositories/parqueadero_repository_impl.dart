@@ -27,6 +27,16 @@ class ParqueaderoRepositoryImpl implements ParqueaderoRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, ParqueaderoEntity>> getById(String id) async {
+    try {
+      final model = await _datasource.getById(id);
+      return Right(model);
+    } catch (e) {
+      return Left(ServerFailure('Error al cargar parqueadero: $e'));
+    }
+  }
+
   double _haversineKm(double lat1, double lng1, double lat2, double lng2) {
     const r = 6371.0;
     final dLat = _rad(lat2 - lat1);
