@@ -32,6 +32,13 @@ dependencies:
   # Tipografía
   google_fonts: ^6.2.1
 
+  # Mapas y ubicación
+  google_maps_flutter: ^2.9.0
+  geolocator: ^13.0.2
+
+  # Variables de entorno
+  flutter_dotenv: ^5.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -40,3 +47,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - .env

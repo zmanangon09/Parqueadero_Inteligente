@@ -1,15 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+
+import '../../data/datasources/local/location_local_datasource.dart';
 import '../../data/datasources/remote/auth_remote_datasource.dart';
+import '../../data/datasources/remote/parqueadero_remote_datasource.dart';
 import '../../data/datasources/remote/user_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
+import '../../data/repositories/location_repository_impl.dart';
+import '../../data/repositories/parqueadero_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../domain/repositories/location_repository.dart';
+import '../../domain/repositories/parqueadero_repository.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/auth/register_user_usecase.dart';
+import '../../domain/usecases/location/get_current_location_usecase.dart';
+import '../../domain/usecases/parking/get_parqueaderos_cercanos_usecase.dart';
 import '../../presentation/viewmodels/auth_viewmodel.dart';
+import '../../presentation/viewmodels/home_viewmodel.dart';
 
 final sl = GetIt.instance;
 
@@ -18,27 +28,45 @@ void setupDependencies() {
   sl.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
   sl.registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance);
 
-  // Datasources
+  // Datasources — Auth
   sl.registerLazySingleton<AuthRemoteDataSource>(
       () => AuthRemoteDataSourceImpl(sl()));
   sl.registerLazySingleton<UserRemoteDataSource>(
       () => UserRemoteDataSourceImpl(sl()));
 
-  // Repository
+  // Datasources — Location & Parking
+  sl.registerLazySingleton<LocationLocalDatasource>(
+      () => LocationLocalDatasourceImpl());
+  sl.registerLazySingleton<ParqueaderoRemoteDatasource>(
+      () => ParqueaderoRemoteDatasourceImpl(sl()));
+
+  // Repositories
   sl.registerLazySingleton<AuthRepository>(
       () => AuthRepositoryImpl(sl(), sl()));
+  sl.registerLazySingleton<LocationRepository>(
+      () => LocationRepositoryImpl(sl()));
+  sl.registerLazySingleton<ParqueaderoRepository>(
+      () => ParqueaderoRepositoryImpl(sl()));
 
-  // Use Cases
+  // Use Cases — Auth
   sl.registerLazySingleton(() => LoginUseCase(sl()));
   sl.registerLazySingleton(() => RegisterUserUseCase(sl()));
   sl.registerLazySingleton(() => LogoutUseCase(sl()));
   sl.registerLazySingleton(() => GetCurrentUserUseCase(sl()));
 
-  // ViewModel
+  // Use Cases — Home
+  sl.registerLazySingleton(() => GetCurrentLocationUseCase(sl()));
+  sl.registerLazySingleton(() => GetParqueaderosCercanosUseCase(sl()));
+
+  // ViewModels
   sl.registerFactory(() => AuthViewModel(
         loginUseCase: sl(),
         registerUseCase: sl(),
         logoutUseCase: sl(),
         getCurrentUserUseCase: sl(),
+      ));
+  sl.registerFactory(() => HomeViewModel(
+        getLocationUseCase: sl(),
+        getParqueaderosUseCase: sl(),
       ));
 }

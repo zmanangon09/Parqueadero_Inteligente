@@ -1,37 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
 import '../../presentation/viewmodels/auth_viewmodel.dart';
+import '../../presentation/viewmodels/home_viewmodel.dart';
 import '../../presentation/views/auth/login_view.dart';
 import '../../presentation/views/auth/register_view.dart';
-
-// Placeholder reemplazado en Módulo 2
-class _PlaceholderHomeView extends StatelessWidget {
-  const _PlaceholderHomeView();
-
-  @override
-  Widget build(BuildContext context) {
-    final vm = context.watch<AuthViewModel>();
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Bienvenido, ${vm.currentUser?.nombre ?? ""}',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => context.read<AuthViewModel>().logout(),
-              child: const Text('Cerrar sesión'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+import '../../presentation/views/home/home_view.dart';
+import '../di/injection.dart';
 
 class AppRouter {
   static GoRouter createRouter(AuthViewModel authViewModel) => GoRouter(
@@ -46,9 +21,15 @@ class AppRouter {
           return null;
         },
         routes: [
-          GoRoute(path: '/login', builder: (_, __) => const LoginView()),
-          GoRoute(path: '/register', builder: (_, __) => const RegisterView()),
-          GoRoute(path: '/home', builder: (_, __) => const _PlaceholderHomeView()),
+          GoRoute(path: '/login', builder: (ctx, s) => const LoginView()),
+          GoRoute(path: '/register', builder: (ctx, s) => const RegisterView()),
+          GoRoute(
+            path: '/home',
+            builder: (context, _) => ChangeNotifierProvider<HomeViewModel>(
+              create: (_) => sl<HomeViewModel>(),
+              child: const HomeView(),
+            ),
+          ),
         ],
       );
 }
