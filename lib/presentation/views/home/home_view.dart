@@ -137,6 +137,34 @@ class _HomeViewState extends State<HomeView> {
 }
 
 class _TopBar extends StatelessWidget {
+  void _showLogoutDialog(BuildContext context, AuthViewModel authVm) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Cerrar sesión',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+        content: Text('¿Deseas cerrar la sesión?',
+            style: GoogleFonts.workSans()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              authVm.logout();
+            },
+            child: Text('Cerrar sesión',
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authVm = context.watch<AuthViewModel>();
@@ -176,6 +204,14 @@ class _TopBar extends StatelessWidget {
                           fontSize: 15,
                           color: const Color(0xFF134E4A),
                         ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => _showLogoutDialog(context, authVm),
+                      child: Icon(
+                        Icons.logout_rounded,
+                        color: cs.primary.withAlpha(180),
+                        size: 20,
                       ),
                     ),
                   ],
