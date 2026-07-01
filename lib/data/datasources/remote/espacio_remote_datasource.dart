@@ -16,7 +16,12 @@ class EspacioRemoteDatasourceImpl implements EspacioRemoteDatasource {
       _db
           .collection('espacios')
           .where('parqueaderoId', isEqualTo: parqueaderoId)
-          .orderBy('numero')
           .snapshots()
-          .map((snap) => snap.docs.map(EspacioModel.fromFirestore).toList());
+          .map((snap) {
+        final list = snap.docs.map(EspacioModel.fromFirestore).toList();
+        // Orden client-side por número: evita requerir un índice compuesto
+        // (where + orderBy) en Firestore. La lista de espacios es pequeña.
+        list.sort((a, b) => a.numero.compareTo(b.numero));
+        return list;
+      });
 }
