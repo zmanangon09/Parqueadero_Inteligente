@@ -16,6 +16,7 @@ class ParqueaderoDetailViewModel extends ChangeNotifier {
   DetailStatus _status = DetailStatus.idle;
   ParqueaderoEntity? _parqueadero;
   List<EspacioEntity> _espacios = [];
+  EspacioEntity? _selectedEspacio;
   String? _errorMessage;
   StreamSubscription<dynamic>? _espaciosSub;
 
@@ -28,7 +29,20 @@ class ParqueaderoDetailViewModel extends ChangeNotifier {
   DetailStatus get status => _status;
   ParqueaderoEntity? get parqueadero => _parqueadero;
   List<EspacioEntity> get espacios => _espacios;
+  EspacioEntity? get selectedEspacio => _selectedEspacio;
   String? get errorMessage => _errorMessage;
+
+  void selectEspacio(EspacioEntity espacio) {
+    if (espacio.estado != EstadoEspacio.libre) return;
+    _selectedEspacio =
+        _selectedEspacio?.id == espacio.id ? null : espacio;
+    notifyListeners();
+  }
+
+  void clearSelection() {
+    _selectedEspacio = null;
+    notifyListeners();
+  }
 
   int get espaciosLibres =>
       _espacios.where((e) => e.estado == EstadoEspacio.libre).length;
@@ -63,7 +77,17 @@ class ParqueaderoDetailViewModel extends ChangeNotifier {
     _espaciosSub = _watchEspacios(parqueaderoId).listen((result) {
       result.fold(
         (failure) => _errorMessage = failure.message,
-        (list) => _espacios = list,
+        (list) {
+          _espacios = list;
+          // Si el espacio seleccionado dejó de estar libre, limpiar selección.
+          final sel = _selectedEspacio;
+          if (sel != null) {
+            final coincidencias = list.where((e) => e.id == sel.id);
+            final sigueLibre = coincidencias.isNotEmpty &&
+                coincidencias.first.estado == EstadoEspacio.libre;
+            if (!sigueLibre) _selectedEspacio = null;
+          }
+        },
       );
       notifyListeners();
     });

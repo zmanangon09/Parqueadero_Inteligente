@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import '../../../domain/entities/parqueadero_entity.dart';
+import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/parqueadero_detail_viewmodel.dart';
 import '../../widgets/espacio_grid.dart';
+import '../../widgets/reserva_sheet.dart';
 
 class ParqueaderoDetailView extends StatefulWidget {
   final String parqueaderoId;
@@ -92,7 +95,11 @@ class _ParqueaderoDetailViewState extends State<ParqueaderoDetailView> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        EspacioGrid(espacios: vm.espacios),
+                        EspacioGrid(
+                          espacios: vm.espacios,
+                          selectedId: vm.selectedEspacio?.id,
+                          onTap: vm.selectEspacio,
+                        ),
                         const SizedBox(height: 32),
                       ],
                     ),
@@ -106,10 +113,14 @@ class _ParqueaderoDetailViewState extends State<ParqueaderoDetailView> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Módulo 4: Reserva
-                      },
-                      child: const Text('Reservar espacio'),
+                      onPressed: vm.selectedEspacio == null
+                          ? null
+                          : () => _onReservar(context, vm, p),
+                      child: Text(
+                        vm.selectedEspacio == null
+                            ? 'Selecciona un espacio libre'
+                            : 'Reservar espacio ${vm.selectedEspacio!.numero}',
+                      ),
                     ),
                   ),
                 )
@@ -117,6 +128,39 @@ class _ParqueaderoDetailViewState extends State<ParqueaderoDetailView> {
         );
       },
     );
+  }
+
+  Future<void> _onReservar(
+    BuildContext context,
+    ParqueaderoDetailViewModel vm,
+    ParqueaderoEntity parqueadero,
+  ) async {
+    final espacio = vm.selectedEspacio;
+    if (espacio == null) return;
+
+    final usuario = context.read<AuthViewModel>().currentUser;
+    if (usuario == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Debes iniciar sesión para reservar.')),
+      );
+      return;
+    }
+
+    final creada = await showReservaSheet(
+      context,
+      espacio: espacio,
+      parqueadero: parqueadero,
+      usuario: usuario,
+    );
+
+    if (creada == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('¡Reserva confirmada!'),
+          backgroundColor: Color(0xFF0F766E),
+        ),
+      );
+    }
   }
 }
 

@@ -23,4 +23,11 @@ class Validators {
     if (!regex.hasMatch(value)) return 'Ingresa un teléfono válido.';
     return null;
   }
+
+  static String? placa(String? value) {
+    if (value == null || value.trim().isEmpty) return 'La placa es requerida.';
+    final regex = RegExp(r'^[A-Za-z]{3}-?[0-9]{3,4}$');
+    if (!regex.hasMatch(value.trim())) return 'Ingresa una placa válida.';
+    return null;
+  }
 }

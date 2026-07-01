@@ -5,8 +5,15 @@ import '../../domain/entities/espacio_entity.dart';
 
 class EspacioGrid extends StatelessWidget {
   final List<EspacioEntity> espacios;
+  final String? selectedId;
+  final ValueChanged<EspacioEntity>? onTap;
 
-  const EspacioGrid({super.key, required this.espacios});
+  const EspacioGrid({
+    super.key,
+    required this.espacios,
+    this.selectedId,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +44,11 @@ class EspacioGrid extends StatelessWidget {
             childAspectRatio: 1,
           ),
           itemCount: espacios.length,
-          itemBuilder: (context, i) => _EspacioCell(espacio: espacios[i]),
+          itemBuilder: (context, i) => _EspacioCell(
+            espacio: espacios[i],
+            selected: espacios[i].id == selectedId,
+            onTap: onTap,
+          ),
         ),
       ],
     );
@@ -46,31 +57,44 @@ class EspacioGrid extends StatelessWidget {
 
 class _EspacioCell extends StatelessWidget {
   final EspacioEntity espacio;
-  const _EspacioCell({required this.espacio});
+  final bool selected;
+  final ValueChanged<EspacioEntity>? onTap;
+  const _EspacioCell({
+    required this.espacio,
+    this.selected = false,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final (bg, fg, icon) = _colorsFor(espacio);
+    final tappable = espacio.isLibre && onTap != null;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: fg, size: 16),
-          const SizedBox(height: 2),
-          Text(
-            '${espacio.numero}',
-            style: GoogleFonts.outfit(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: fg,
+    return GestureDetector(
+      onTap: tappable ? () => onTap!(espacio) : null,
+      child: Container(
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(10),
+          border: selected
+              ? Border.all(color: const Color(0xFF0F766E), width: 3)
+              : null,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: fg, size: 16),
+            const SizedBox(height: 2),
+            Text(
+              '${espacio.numero}',
+              style: GoogleFonts.outfit(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: fg,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
