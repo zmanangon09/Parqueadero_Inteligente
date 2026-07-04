@@ -4,10 +4,15 @@ import 'package:provider/provider.dart';
 import '../../presentation/viewmodels/auth_viewmodel.dart';
 import '../../presentation/viewmodels/home_viewmodel.dart';
 import '../../presentation/viewmodels/parqueadero_detail_viewmodel.dart';
+import '../../presentation/viewmodels/admin_dashboard_viewmodel.dart';
 import '../../presentation/views/auth/login_view.dart';
 import '../../presentation/views/auth/register_view.dart';
 import '../../presentation/views/home/home_view.dart';
 import '../../presentation/views/parking/parqueadero_detail_view.dart';
+import '../../presentation/views/admin/admin_dashboard_view.dart';
+import '../../presentation/views/admin/add_parqueadero_view.dart';
+import '../../presentation/views/admin/scan_parqueadero_view.dart';
+import '../../presentation/views/admin/review_parqueadero_view.dart';
 import '../di/injection.dart';
 
 class AppRouter {
@@ -18,8 +23,21 @@ class AppRouter {
           final isAuth = authViewModel.status == AuthStatus.authenticated;
           final onAuthRoute = state.matchedLocation == '/login' ||
               state.matchedLocation == '/register';
-          if (!isAuth && !onAuthRoute) return '/login';
-          if (isAuth && onAuthRoute) return '/home';
+          
+          if (!isAuth) {
+            return onAuthRoute ? null : '/login';
+          }
+          
+          final isAdmin = authViewModel.isAdmin;
+          final onAdminRoute = state.matchedLocation == '/admin_dashboard' ||
+              state.matchedLocation.startsWith('/admin/');
+          
+          if (isAdmin) {
+            if (!onAdminRoute) return '/admin_dashboard';
+          } else {
+            if (onAdminRoute || onAuthRoute) return '/home';
+          }
+          
           return null;
         },
         routes: [
@@ -41,6 +59,25 @@ class AppRouter {
                 child: ParqueaderoDetailView(parqueaderoId: id),
               );
             },
+          ),
+          GoRoute(
+            path: '/admin_dashboard',
+            builder: (context, _) => ChangeNotifierProvider<AdminDashboardViewModel>(
+              create: (_) => sl<AdminDashboardViewModel>(),
+              child: const AdminDashboardView(),
+            ),
+          ),
+          GoRoute(
+            path: '/admin/add_parking',
+            builder: (context, _) => const AddParqueaderoView(),
+          ),
+          GoRoute(
+            path: '/admin/scan_parking',
+            builder: (context, _) => const ScanParqueaderoView(),
+          ),
+          GoRoute(
+            path: '/admin/review_parking',
+            builder: (context, _) => const ReviewParqueaderoView(),
           ),
         ],
       );

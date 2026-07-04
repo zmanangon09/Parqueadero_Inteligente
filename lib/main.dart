@@ -6,6 +6,7 @@ import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
+import 'presentation/viewmodels/add_parqueadero_viewmodel.dart';
 import 'presentation/viewmodels/auth_viewmodel.dart';
 
 Future<void> main() async {
@@ -24,8 +25,13 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authViewModel = sl<AuthViewModel>();
-    return ChangeNotifierProvider<AuthViewModel>.value(
-      value: authViewModel,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthViewModel>.value(value: authViewModel),
+        ChangeNotifierProvider<AddParqueaderoViewModel>(
+          create: (_) => sl<AddParqueaderoViewModel>(),
+        ),
+      ],
       child: _RouterApp(authViewModel: authViewModel),
     );
   }

@@ -39,6 +39,9 @@ dependencies:
   # Variables de entorno
   flutter_dotenv: ^5.2.1
 
+  # Cámara e imágenes para escaneo
+  image_picker: ^1.1.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
