@@ -30,4 +30,40 @@ class Validators {
     if (!regex.hasMatch(value.trim())) return 'Ingresa una placa válida.';
     return null;
   }
+
+  static String? numeroTarjeta(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'El número de tarjeta es requerido.';
+    }
+    final digits = value.replaceAll(RegExp(r'\s'), '');
+    if (!RegExp(r'^[0-9]{16}$').hasMatch(digits)) {
+      return 'La tarjeta debe tener 16 dígitos.';
+    }
+    return null;
+  }
+
+  static String? expiracionTarjeta(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'La expiración es requerida.';
+    }
+    final match = RegExp(r'^(\d{2})/(\d{2})$').firstMatch(value.trim());
+    if (match == null) return 'Usa el formato MM/YY.';
+    final mes = int.parse(match.group(1)!);
+    final anio = 2000 + int.parse(match.group(2)!);
+    if (mes < 1 || mes > 12) return 'Mes inválido.';
+    final ahora = DateTime.now();
+    final ultimoDiaMes = DateTime(anio, mes + 1, 0);
+    if (ultimoDiaMes.isBefore(DateTime(ahora.year, ahora.month, 1))) {
+      return 'La tarjeta está vencida.';
+    }
+    return null;
+  }
+
+  static String? cvc(String? value) {
+    if (value == null || value.trim().isEmpty) return 'El CVC es requerido.';
+    if (!RegExp(r'^[0-9]{3}$').hasMatch(value.trim())) {
+      return 'El CVC debe tener 3 dígitos.';
+    }
+    return null;
+  }
 }
