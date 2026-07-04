@@ -7,6 +7,7 @@ class EspacioNoDisponibleException implements Exception {}
 abstract class ReservaRemoteDatasource {
   Future<ReservaModel> crearReserva(ReservaModel reserva);
   Future<List<ReservaModel>> getAllReservas();
+  Future<void> cancelarReserva(ReservaModel reserva);
 }
 
 class ReservaRemoteDatasourceImpl implements ReservaRemoteDatasource {
@@ -48,5 +49,16 @@ class ReservaRemoteDatasourceImpl implements ReservaRemoteDatasource {
   Future<List<ReservaModel>> getAllReservas() async {
     final snap = await _db.collection('reservas').get();
     return snap.docs.map(ReservaModel.fromFirestore).toList();
+  }
+
+  @override
+  Future<void> cancelarReserva(ReservaModel reserva) async {
+    final espacioRef = _db.collection('espacios').doc(reserva.espacioId);
+    final reservaRef = _db.collection('reservas').doc(reserva.id);
+
+    await _db.runTransaction((txn) async {
+      txn.update(reservaRef, {'estado': 'cancelada'});
+      txn.update(espacioRef, {'estado': 'libre'});
+    });
   }
 }

@@ -102,7 +102,7 @@ void main() {
     expect(capturada!.montoTotal, 6.0);
   });
 
-  test('construye la reserva con estado activa y checkInRealizado en false',
+  test('construye la reserva con estado pendiente y checkInRealizado en false',
       () async {
     ReservaEntity? capturada;
     when(() => mockRepo.crearReserva(any())).thenAnswer((invocation) async {
@@ -112,7 +112,7 @@ void main() {
 
     await callSut();
 
-    expect(capturada!.estado, EstadoReserva.activa);
+    expect(capturada!.estado, EstadoReserva.pendiente);
     expect(capturada!.checkInRealizado, isFalse);
     expect(
       capturada!.limiteCheckIn.difference(capturada!.fechaInicio),

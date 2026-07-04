@@ -37,7 +37,7 @@ class CrearReservaUseCase {
       fechaInicio: inicio,
       fechaFin: inicio.add(Duration(hours: duracionHoras)),
       montoTotal: duracionHoras * tarifaPorHora,
-      estado: EstadoReserva.activa,
+      estado: EstadoReserva.pendiente,
       limiteCheckIn: inicio.add(gracePeriod),
       checkInRealizado: false,
     );

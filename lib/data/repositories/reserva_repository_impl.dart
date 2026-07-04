@@ -33,4 +33,14 @@ class ReservaRepositoryImpl implements ReservaRepository {
       return Left(ServerFailure('Error al cargar historial de reservas: $e'));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> cancelarReserva(ReservaEntity reserva) async {
+    try {
+      await _datasource.cancelarReserva(ReservaModel.fromEntity(reserva));
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure('Error al cancelar la reserva: $e'));
+    }
+  }
 }

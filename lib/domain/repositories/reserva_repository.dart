@@ -9,4 +9,7 @@ abstract class ReservaRepository {
   Future<Either<Failure, ReservaEntity>> crearReserva(ReservaEntity reserva);
 
   Future<Either<Failure, List<ReservaEntity>>> getAllReservas();
+
+  /// Cancela la reserva y libera su espacio (`ocupado → libre`) atómicamente.
+  Future<Either<Failure, void>> cancelarReserva(ReservaEntity reserva);
 }
