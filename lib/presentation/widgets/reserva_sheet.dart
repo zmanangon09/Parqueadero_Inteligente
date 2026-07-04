@@ -6,20 +6,21 @@ import '../../core/di/injection.dart';
 import '../../core/utils/validators.dart';
 import '../../domain/entities/espacio_entity.dart';
 import '../../domain/entities/parqueadero_entity.dart';
+import '../../domain/entities/reserva_entity.dart';
 import '../../domain/entities/user_entity.dart';
 import '../viewmodels/reserva_viewmodel.dart';
 
 const _primary = Color(0xFF0F766E);
 const _dark = Color(0xFF134E4A);
 
-/// Muestra el bottom sheet de reserva. Devuelve `true` si la reserva se creó.
-Future<bool?> showReservaSheet(
+/// Muestra el bottom sheet de reserva. Devuelve la reserva creada, o `null`.
+Future<ReservaEntity?> showReservaSheet(
   BuildContext context, {
   required EspacioEntity espacio,
   required ParqueaderoEntity parqueadero,
   required UserEntity usuario,
 }) {
-  return showModalBottomSheet<bool>(
+  return showModalBottomSheet<ReservaEntity>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.white,
@@ -99,7 +100,7 @@ class _ReservaSheetContentState extends State<_ReservaSheetContent> {
 
     if (!mounted) return;
     if (ok) {
-      Navigator.of(context).pop(true);
+      Navigator.of(context).pop(vm.reserva);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

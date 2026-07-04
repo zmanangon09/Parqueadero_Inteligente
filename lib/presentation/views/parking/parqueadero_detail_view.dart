@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../domain/entities/parqueadero_entity.dart';
+import '../../../domain/entities/reserva_entity.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/parqueadero_detail_viewmodel.dart';
 import '../../widgets/espacio_grid.dart';
@@ -153,13 +155,8 @@ class _ParqueaderoDetailViewState extends State<ParqueaderoDetailView> {
       usuario: usuario,
     );
 
-    if (creada == true && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('¡Reserva confirmada!'),
-          backgroundColor: Color(0xFF0F766E),
-        ),
-      );
+    if (creada is ReservaEntity && context.mounted) {
+      context.push('/pago/${creada.id}', extra: creada);
     }
   }
 }

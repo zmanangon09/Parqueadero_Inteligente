@@ -1,14 +1,17 @@
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../domain/entities/reserva_entity.dart';
 import '../../presentation/viewmodels/auth_viewmodel.dart';
 import '../../presentation/viewmodels/home_viewmodel.dart';
+import '../../presentation/viewmodels/pago_viewmodel.dart';
 import '../../presentation/viewmodels/parqueadero_detail_viewmodel.dart';
 import '../../presentation/viewmodels/admin_dashboard_viewmodel.dart';
 import '../../presentation/views/auth/login_view.dart';
 import '../../presentation/views/auth/register_view.dart';
 import '../../presentation/views/home/home_view.dart';
 import '../../presentation/views/parking/parqueadero_detail_view.dart';
+import '../../presentation/views/pago/pago_view.dart';
 import '../../presentation/views/admin/admin_dashboard_view.dart';
 import '../../presentation/views/admin/add_parqueadero_view.dart';
 import '../../presentation/views/admin/scan_parqueadero_view.dart';
@@ -57,6 +60,16 @@ class AppRouter {
               return ChangeNotifierProvider<ParqueaderoDetailViewModel>(
                 create: (_) => sl<ParqueaderoDetailViewModel>(),
                 child: ParqueaderoDetailView(parqueaderoId: id),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/pago/:reservaId',
+            builder: (context, state) {
+              final reserva = state.extra as ReservaEntity;
+              return ChangeNotifierProvider<PagoViewModel>(
+                create: (_) => sl<PagoViewModel>(),
+                child: PagoView(reserva: reserva),
               );
             },
           ),
