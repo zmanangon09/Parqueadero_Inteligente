@@ -7,4 +7,6 @@ abstract class ReservaRepository {
   /// lo marca como ocupado y persiste la reserva. Si el espacio ya no está
   /// disponible devuelve un [ValidationFailure].
   Future<Either<Failure, ReservaEntity>> crearReserva(ReservaEntity reserva);
+
+  Future<Either<Failure, List<ReservaEntity>>> getAllReservas();
 }

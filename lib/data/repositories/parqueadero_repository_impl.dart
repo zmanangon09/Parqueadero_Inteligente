@@ -2,9 +2,12 @@ import 'dart:math';
 
 import 'package:dartz/dartz.dart';
 import '../../core/errors/failures.dart';
+import '../../domain/entities/espacio_entity.dart';
 import '../../domain/entities/parqueadero_entity.dart';
 import '../../domain/repositories/parqueadero_repository.dart';
 import '../datasources/remote/parqueadero_remote_datasource.dart';
+import '../models/espacio_model.dart';
+import '../models/parqueadero_model.dart';
 
 class ParqueaderoRepositoryImpl implements ParqueaderoRepository {
   final ParqueaderoRemoteDatasource _datasource;
@@ -34,6 +37,50 @@ class ParqueaderoRepositoryImpl implements ParqueaderoRepository {
       return Right(model);
     } catch (e) {
       return Left(ServerFailure('Error al cargar parqueadero: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> saveParqueadero(
+    ParqueaderoEntity parqueadero,
+    List<EspacioEntity> espacios,
+  ) async {
+    try {
+      final pqModel = ParqueaderoModel(
+        id: parqueadero.id,
+        nombre: parqueadero.nombre,
+        direccion: parqueadero.direccion,
+        lat: parqueadero.lat,
+        lng: parqueadero.lng,
+        capacidadTotal: parqueadero.capacidadTotal,
+        espaciosDisponibles: parqueadero.espaciosDisponibles,
+        tarifaPorHora: parqueadero.tarifaPorHora,
+        horario: parqueadero.horario,
+        adminId: parqueadero.adminId,
+      );
+      final espModels = espacios
+          .map((e) => EspacioModel(
+                id: e.id,
+                parqueaderoId: e.parqueaderoId,
+                numero: e.numero,
+                estado: e.estado,
+                tipo: e.tipo,
+              ))
+          .toList();
+      await _datasource.saveParqueadero(pqModel, espModels);
+      return const Right(unit);
+    } catch (e) {
+      return Left(ServerFailure('Error al guardar parqueadero: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, int>> getParqueaderosCount() async {
+    try {
+      final count = await _datasource.getParqueaderosCount();
+      return Right(count);
+    } catch (e) {
+      return Left(ServerFailure('Error al obtener total de parqueaderos: $e'));
     }
   }
 

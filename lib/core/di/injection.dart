@@ -26,7 +26,11 @@ import '../../domain/usecases/espacios/watch_espacios_usecase.dart';
 import '../../domain/usecases/location/get_current_location_usecase.dart';
 import '../../domain/usecases/parking/get_parqueadero_by_id_usecase.dart';
 import '../../domain/usecases/parking/get_parqueaderos_cercanos_usecase.dart';
+import '../../domain/usecases/parking/save_parqueadero_usecase.dart';
 import '../../domain/usecases/reservas/crear_reserva_usecase.dart';
+import '../services/detector_service.dart';
+import '../../presentation/viewmodels/add_parqueadero_viewmodel.dart';
+import '../../presentation/viewmodels/admin_dashboard_viewmodel.dart';
 import '../../presentation/viewmodels/auth_viewmodel.dart';
 import '../../presentation/viewmodels/home_viewmodel.dart';
 import '../../presentation/viewmodels/parqueadero_detail_viewmodel.dart';
@@ -78,6 +82,10 @@ void setupDependencies() {
   sl.registerLazySingleton(() => GetParqueaderosCercanosUseCase(sl()));
   sl.registerLazySingleton(() => GetParqueaderoByIdUseCase(sl()));
   sl.registerLazySingleton(() => WatchEspaciosUseCase(sl()));
+  sl.registerLazySingleton(() => SaveParqueaderoUseCase(sl()));
+
+  // Services
+  sl.registerLazySingleton<SpaceDetectorService>(() => SpaceDetectorService());
 
   // Use Cases — Reserva
   sl.registerLazySingleton(() => CrearReservaUseCase(sl()));
@@ -98,4 +106,13 @@ void setupDependencies() {
         watchEspaciosUseCase: sl(),
       ));
   sl.registerFactory(() => ReservaViewModel(crearReservaUseCase: sl()));
+  sl.registerFactory(() => AdminDashboardViewModel(
+        authRepo: sl(),
+        parkingRepo: sl(),
+        reservaRepo: sl(),
+      ));
+  sl.registerFactory(() => AddParqueaderoViewModel(
+        saveParqueaderoUseCase: sl(),
+        detectorService: sl(),
+      ));
 }

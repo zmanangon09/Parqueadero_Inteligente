@@ -6,6 +6,7 @@ class EspacioNoDisponibleException implements Exception {}
 
 abstract class ReservaRemoteDatasource {
   Future<ReservaModel> crearReserva(ReservaModel reserva);
+  Future<List<ReservaModel>> getAllReservas();
 }
 
 class ReservaRemoteDatasourceImpl implements ReservaRemoteDatasource {
@@ -41,5 +42,11 @@ class ReservaRemoteDatasourceImpl implements ReservaRemoteDatasource {
       checkInRealizado: reserva.checkInRealizado,
       qrCode: reserva.qrCode,
     );
+  }
+
+  @override
+  Future<List<ReservaModel>> getAllReservas() async {
+    final snap = await _db.collection('reservas').get();
+    return snap.docs.map(ReservaModel.fromFirestore).toList();
   }
 }

@@ -23,4 +23,14 @@ class ReservaRepositoryImpl implements ReservaRepository {
       return Left(ServerFailure('Error al crear la reserva: $e'));
     }
   }
+
+  @override
+  Future<Either<Failure, List<ReservaEntity>>> getAllReservas() async {
+    try {
+      final list = await _datasource.getAllReservas();
+      return Right(list);
+    } catch (e) {
+      return Left(ServerFailure('Error al cargar historial de reservas: $e'));
+    }
+  }
 }
