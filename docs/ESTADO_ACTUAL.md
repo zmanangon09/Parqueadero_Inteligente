@@ -22,20 +22,21 @@
 | 2 — Home con Google Maps | `docs/plans/modulo2-home.md` | `docs/execution/modulo2-home.md` | ✓ Completo |
 | 3 — Detalle de parqueadero (espacios en tiempo real) | `docs/plans/modulo3-detalle-parqueadero.md` | `docs/execution/modulo3-detalle-parqueadero.md` | ✓ Completo |
 | 4 — Reserva (transacción Firestore, no-show modelado) | `docs/plans/modulo4-reserva.md` | `docs/execution/modulo4-reserva.md` | ✓ Completo |
+| 5 — Pago (simulado, estilo Stripe test-mode) | `docs/plans/modulo5-pago.md` | `docs/execution/modulo5-pago.md` | ✓ Completo (falta prueba manual E2E) |
 | Admin — Panel de administración (registro de parqueaderos + dashboard) | — (trabajo de Andrea) | `Cambios_administrador.md` (raíz) | ✓ Integrado vía PR #1 |
 
 **Flujo de trabajo usado en cada módulo:** presentar plan de 7 puntos → esperar aprobación del usuario ("lo apruebo") → implementar → correr tests → `dart analyze` sin errores → commit (sin atribución a Claude) → push.
 
 ## Pendiente
 
-- **Módulo 5 — Pago (Stripe Test Mode)**: siguiente paso. Confirmación de pago sobre la reserva creada en el Módulo 4 (`montoTotal` ya calculado).
-- **Módulo 6 — Check-in/Check-out (QR)**: aquí se activa la **liberación automática del no-show** — si no se hace check-in dentro de los 10 min (`reserva.limiteCheckIn`), el espacio vuelve a `libre`. Los campos `limiteCheckIn` y `checkInRealizado` ya están modelados en el Módulo 4.
+- **Módulo 6 — Check-in/Check-out (QR)**: siguiente paso. Aquí se activa la **liberación automática del no-show** — si no se hace check-in dentro de los 10 min (`reserva.limiteCheckIn`), el espacio vuelve a `libre`. Los campos `limiteCheckIn` y `checkInRealizado` ya están modelados en el Módulo 4. Nota: el Módulo 5 dejó reservas que pueden quedar en `pendiente` sin pagar (el espacio sigue retenido); su liberación por timeout también cae aquí.
 - **Módulo 8 — Perfil**: agregar vehículos a `usuarios/{uid}.vehiculos`. Mientras no exista, el sheet de reserva usa un campo de texto de placa como fallback.
 
-## Estado técnico verificado (2026-07-03, tras integrar el panel de admin)
+## Estado técnico verificado (2026-07-03, tras Módulo 5 - Pago)
 
-- `flutter test` → **18/18 tests pasando** (el panel de admin no agregó tests)
+- `flutter test` → **30/30 tests pasando** (18 previos + 8 validadores de tarjeta + 4 del `ProcesarPagoUseCase`)
 - `flutter analyze` → **0 errores**. Avisos no bloqueantes: 2 `info` por `Radio` deprecado (`groupValue`/`onChanged`) en `lib/presentation/views/admin/review_parqueadero_view.dart` + 1 `warning` preexistente (`tLejano` en el test del Módulo 2)
+- **Pendiente:** prueba manual end-to-end del flujo de pago en dispositivo/emulador (con tarjetas `4242…` éxito / `4000…0002` declinada)
 - `git status` → working tree limpio
 
 ## Arquitectura (Clean Architecture + MVVM + Provider)
@@ -44,7 +45,7 @@
 - **Data**: datasources (Firebase Auth, Firestore, Geolocator), modelos `fromFirestore`/`toFirestore`, implementaciones de repositorios
 - **Presentation**: ViewModels (`ChangeNotifier`, sin acceso directo a Firebase), Views, Widgets reutilizables
 - **DI**: `get_it` en `lib/core/di/injection.dart`
-- **Navegación**: `go_router` con `refreshListenable` en `lib/core/router/app_router.dart`, rutas: `/login`, `/register`, `/home`, `/parking/:id`, `/admin_dashboard`, `/admin/add_parking`, `/admin/scan_parking`, `/admin/review_parking`. El `redirect` es por rol: si `isAdmin` → `/admin_dashboard`; si un cliente entra a una ruta `/admin/*` → lo devuelve a `/home`.
+- **Navegación**: `go_router` con `refreshListenable` en `lib/core/router/app_router.dart`, rutas: `/login`, `/register`, `/home`, `/parking/:id`, `/pago/:reservaId`, `/admin_dashboard`, `/admin/add_parking`, `/admin/scan_parking`, `/admin/review_parking`. El `redirect` es por rol: si `isAdmin` → `/admin_dashboard`; si un cliente entra a una ruta `/admin/*` → lo devuelve a `/home`.
 - **Tema**: Material 3, paleta Trust Teal (`#0F766E` primario), fuentes Outfit (títulos) + Work Sans (cuerpo)
 
 ## Configuración de entorno (necesaria en máquina nueva)
@@ -63,7 +64,7 @@ Estos archivos están gitignored y **no se subieron** al repo — hay que recrea
 4. **Firebase Console** (proyecto `smart-parking-mrcc`):
    - Authentication → Sign-in method → Email/Password debe estar **habilitado**
    - Firestore Database → debe existir la base `(default)` en modo de prueba
-   - Colecciones esperadas: `parqueaderos`, `espacios`, `usuarios`, `reservas`
+   - Colecciones esperadas: `parqueaderos`, `espacios`, `usuarios`, `reservas`, `pagos`
    - El usuario admin de prueba (`admin@parqueadero.com`) se auto-crea en Auth y en `usuarios/` al primer login (ver "Módulo de administración" abajo)
 
 ## Datos de prueba en Firestore (para probar Módulo 2 y 3)
