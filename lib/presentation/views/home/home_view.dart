@@ -210,6 +210,24 @@ class _TopBar extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
+                      onTap: () => context.push('/historial'),
+                      child: Icon(
+                        Icons.receipt_long_rounded,
+                        color: cs.primary.withAlpha(180),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    GestureDetector(
+                      onTap: () => context.push('/perfil'),
+                      child: Icon(
+                        Icons.person_rounded,
+                        color: cs.primary.withAlpha(180),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    GestureDetector(
                       onTap: () => _showLogoutDialog(context, authVm),
                       child: Icon(
                         Icons.logout_rounded,
