@@ -23,4 +23,13 @@ abstract class AuthRepository {
 
   Future<Either<Failure, int>> getUsersCount();
   Future<Either<Failure, List<UserEntity>>> getAllUsers();
+
+  /// Reemplaza la lista de placas del usuario y devuelve el usuario actualizado.
+  Future<Either<Failure, UserEntity>> updateVehiculos(
+      String uid, List<String> vehiculos);
+
+  /// Sube la foto de perfil a Storage, guarda su URL y devuelve el usuario
+  /// actualizado.
+  Future<Either<Failure, UserEntity>> updateFotoPerfil(
+      String uid, String filePath);
 }

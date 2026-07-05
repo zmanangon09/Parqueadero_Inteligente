@@ -6,6 +6,8 @@ abstract class UserRemoteDataSource {
   Future<UserModel> getUserDoc(String uid);
   Future<int> getUsersCount();
   Future<List<UserModel>> getAllUsers();
+  Future<void> updateVehiculos(String uid, List<String> vehiculos);
+  Future<void> updateFotoUrl(String uid, String fotoUrl);
 }
 
 class UserRemoteDataSourceImpl implements UserRemoteDataSource {
@@ -37,4 +39,12 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     final snap = await _usuarios.get();
     return snap.docs.map(UserModel.fromFirestore).toList();
   }
+
+  @override
+  Future<void> updateVehiculos(String uid, List<String> vehiculos) =>
+      _usuarios.doc(uid).update({'vehiculos': vehiculos});
+
+  @override
+  Future<void> updateFotoUrl(String uid, String fotoUrl) =>
+      _usuarios.doc(uid).update({'fotoUrl': fotoUrl});
 }

@@ -8,6 +8,7 @@ class UserEntity {
   final String telefono;
   final DateTime fechaRegistro;
   final List<String> vehiculos;
+  final String? fotoUrl;
 
   const UserEntity({
     required this.uid,
@@ -17,6 +18,7 @@ class UserEntity {
     required this.telefono,
     required this.fechaRegistro,
     this.vehiculos = const [],
+    this.fotoUrl,
   });
 
   @override

@@ -11,6 +11,7 @@ class UserModel extends UserEntity {
     required super.telefono,
     required super.fechaRegistro,
     super.vehiculos,
+    super.fotoUrl,
   });
 
   factory UserModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -23,6 +24,7 @@ class UserModel extends UserEntity {
       telefono: data['telefono'] as String,
       fechaRegistro: (data['fechaRegistro'] as Timestamp).toDate(),
       vehiculos: List<String>.from(data['vehiculos'] ?? []),
+      fotoUrl: data['fotoUrl'] as String?,
     );
   }
 
@@ -33,6 +35,7 @@ class UserModel extends UserEntity {
         'telefono': telefono,
         'fechaRegistro': Timestamp.fromDate(fechaRegistro),
         'vehiculos': vehiculos,
+        'fotoUrl': fotoUrl,
       };
 
   factory UserModel.fromFirebaseUser(

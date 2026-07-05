@@ -4,14 +4,16 @@ import '../../core/errors/failures.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/remote/auth_remote_datasource.dart';
+import '../datasources/remote/storage_remote_datasource.dart';
 import '../datasources/remote/user_remote_datasource.dart';
 import '../models/user_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _authDs;
   final UserRemoteDataSource _userDs;
+  final StorageRemoteDatasource _storageDs;
 
-  const AuthRepositoryImpl(this._authDs, this._userDs);
+  const AuthRepositoryImpl(this._authDs, this._userDs, this._storageDs);
 
   @override
   Future<Either<Failure, UserEntity>> register({
@@ -167,6 +169,29 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(users);
     } catch (e) {
       return Left(ServerFailure('Error al obtener lista de usuarios: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> updateVehiculos(
+      String uid, List<String> vehiculos) async {
+    try {
+      await _userDs.updateVehiculos(uid, vehiculos);
+      return Right(await _userDs.getUserDoc(uid));
+    } catch (e) {
+      return Left(ServerFailure('Error al actualizar vehículos: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> updateFotoPerfil(
+      String uid, String filePath) async {
+    try {
+      final url = await _storageDs.uploadFotoPerfil(uid, filePath);
+      await _userDs.updateFotoUrl(uid, url);
+      return Right(await _userDs.getUserDoc(uid));
+    } catch (e) {
+      return Left(ServerFailure('Error al subir la foto de perfil: $e'));
     }
   }
 

@@ -74,6 +74,13 @@ class AuthViewModel extends ChangeNotifier {
     );
   }
 
+  /// Refresca el usuario en memoria tras editar el perfil, sin pasar por
+  /// `checkSession` (que cambiaría `status` y dispararía el redirect del router).
+  void updateCurrentUser(UserEntity user) {
+    _currentUser = user;
+    notifyListeners();
+  }
+
   void clearError() {
     _errorMessage = null;
     _status = AuthStatus.idle;
