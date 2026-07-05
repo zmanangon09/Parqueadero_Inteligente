@@ -186,7 +186,7 @@ class _ScanParqueaderoViewState extends State<ScanParqueaderoView>
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Toma una foto clara de los espacios de estacionamiento. El modelo detectará automáticamente cada espacio individual.',
+                        'Toma una foto clara de los espacios. El modelo TensorFlow Lite (SSD MobileNet) detectará los vehículos presentes; en la revisión podrás agregar los espacios libres y ajustar el resultado.',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.workSans(
                           fontSize: 14,

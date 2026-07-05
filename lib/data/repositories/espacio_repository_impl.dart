@@ -20,4 +20,34 @@ class EspacioRepositoryImpl implements EspacioRepository {
               ServerFailure('Error al cargar espacios: $e'),
             ),
           );
+
+  @override
+  Future<Either<Failure, List<EspacioEntity>>> getEspaciosByParqueadero(
+    String parqueaderoId,
+  ) async {
+    try {
+      final list = await _datasource.getEspaciosByParqueadero(parqueaderoId);
+      return Right(list);
+    } catch (e) {
+      return Left(ServerFailure('Error al cargar espacios: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> actualizarEstados(
+    String parqueaderoId,
+    Map<String, EstadoEspacio> estadoPorEspacioId,
+    int espaciosDisponibles,
+  ) async {
+    try {
+      await _datasource.actualizarEstados(
+        parqueaderoId,
+        estadoPorEspacioId.map((id, e) => MapEntry(id, e.name)),
+        espaciosDisponibles,
+      );
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure('Error al actualizar ocupación: $e'));
+    }
+  }
 }

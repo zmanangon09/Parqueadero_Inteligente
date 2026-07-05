@@ -3,17 +3,25 @@ import 'package:provider/provider.dart';
 
 import '../../domain/entities/reserva_entity.dart';
 import '../../presentation/viewmodels/auth_viewmodel.dart';
+import '../../presentation/viewmodels/evaluar_ocupacion_viewmodel.dart';
+import '../../presentation/viewmodels/historial_viewmodel.dart';
 import '../../presentation/viewmodels/home_viewmodel.dart';
 import '../../presentation/viewmodels/pago_viewmodel.dart';
 import '../../presentation/viewmodels/parqueadero_detail_viewmodel.dart';
+import '../../presentation/viewmodels/perfil_viewmodel.dart';
+import '../../presentation/viewmodels/qr_scan_viewmodel.dart';
 import '../../presentation/viewmodels/admin_dashboard_viewmodel.dart';
 import '../../presentation/views/auth/login_view.dart';
 import '../../presentation/views/auth/register_view.dart';
+import '../../presentation/views/historial/historial_view.dart';
 import '../../presentation/views/home/home_view.dart';
 import '../../presentation/views/parking/parqueadero_detail_view.dart';
 import '../../presentation/views/pago/pago_view.dart';
+import '../../presentation/views/perfil/perfil_view.dart';
 import '../../presentation/views/admin/admin_dashboard_view.dart';
 import '../../presentation/views/admin/add_parqueadero_view.dart';
+import '../../presentation/views/admin/evaluar_ocupacion_view.dart';
+import '../../presentation/views/admin/qr_scan_view.dart';
 import '../../presentation/views/admin/scan_parqueadero_view.dart';
 import '../../presentation/views/admin/review_parqueadero_view.dart';
 import '../di/injection.dart';
@@ -91,6 +99,37 @@ class AppRouter {
           GoRoute(
             path: '/admin/review_parking',
             builder: (context, _) => const ReviewParqueaderoView(),
+          ),
+          GoRoute(
+            path: '/historial',
+            builder: (context, _) => ChangeNotifierProvider<HistorialViewModel>(
+              create: (_) => sl<HistorialViewModel>(),
+              child: const HistorialView(),
+            ),
+          ),
+          GoRoute(
+            path: '/perfil',
+            builder: (context, _) => ChangeNotifierProvider<PerfilViewModel>(
+              create: (_) => sl<PerfilViewModel>(),
+              child: const PerfilView(),
+            ),
+          ),
+          GoRoute(
+            path: '/admin/scan_qr',
+            builder: (context, _) => ChangeNotifierProvider<QrScanViewModel>(
+              create: (_) => sl<QrScanViewModel>(),
+              child: const QrScanView(),
+            ),
+          ),
+          GoRoute(
+            path: '/admin/evaluate/:id',
+            builder: (context, state) =>
+                ChangeNotifierProvider<EvaluarOcupacionViewModel>(
+              create: (_) => sl<EvaluarOcupacionViewModel>(),
+              child: EvaluarOcupacionView(
+                parqueaderoId: state.pathParameters['id']!,
+              ),
+            ),
           ),
         ],
       );
