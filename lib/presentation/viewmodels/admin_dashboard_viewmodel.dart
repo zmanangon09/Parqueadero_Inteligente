@@ -39,6 +39,10 @@ class AdminDashboardViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // 0. Barrido de no-shows: reservas sin check-in con ventana vencida
+      // pasan a canceladas y sus espacios vuelven a libre.
+      await _reservaRepo.liberarReservasExpiradas();
+
       // 1. Obtener conteo de usuarios y lista de usuarios para mapear nombres
       final usersCountRes = await _authRepo.getUsersCount();
       final usersRes = await _authRepo.getAllUsers();

@@ -3,9 +3,11 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Cámara: escaneo QR (check-in/out) y detección de espacios con TFLite -->
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
-        android:label="pry_final_parqueadero"
+        android:label="Parqueadero Inteligente"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 

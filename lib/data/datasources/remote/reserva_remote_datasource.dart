@@ -7,7 +7,17 @@ class EspacioNoDisponibleException implements Exception {}
 abstract class ReservaRemoteDatasource {
   Future<ReservaModel> crearReserva(ReservaModel reserva);
   Future<List<ReservaModel>> getAllReservas();
+  Future<List<ReservaModel>> getReservasByUsuario(String usuarioId);
   Future<void> cancelarReserva(ReservaModel reserva);
+
+  /// El contenido del QR es el id del documento de la reserva.
+  Future<ReservaModel?> getReservaByQr(String qr);
+  Future<void> checkIn(ReservaModel reserva);
+  Future<void> checkOut(ReservaModel reserva);
+
+  /// Cancela reservas cuya ventana de check-in expiró sin check-in y libera
+  /// sus espacios. Devuelve cuántas liberó.
+  Future<int> liberarReservasExpiradas();
 }
 
 class ReservaRemoteDatasourceImpl implements ReservaRemoteDatasource {
@@ -26,7 +36,13 @@ class ReservaRemoteDatasourceImpl implements ReservaRemoteDatasource {
         throw EspacioNoDisponibleException();
       }
       txn.update(espacioRef, {'estado': 'ocupado'});
-      txn.set(reservaRef, reserva.toFirestore());
+      txn.update(
+        _db.collection('parqueaderos').doc(reserva.parqueaderoId),
+        {'espaciosDisponibles': FieldValue.increment(-1)},
+      );
+      // El QR de la reserva es su propio id de documento.
+      txn.set(reservaRef,
+          reserva.toFirestore()..['qrCode'] = reservaRef.id);
     });
 
     return ReservaModel(
@@ -41,7 +57,7 @@ class ReservaRemoteDatasourceImpl implements ReservaRemoteDatasource {
       estado: reserva.estado,
       limiteCheckIn: reserva.limiteCheckIn,
       checkInRealizado: reserva.checkInRealizado,
-      qrCode: reserva.qrCode,
+      qrCode: reservaRef.id,
     );
   }
 
@@ -52,6 +68,18 @@ class ReservaRemoteDatasourceImpl implements ReservaRemoteDatasource {
   }
 
   @override
+  Future<List<ReservaModel>> getReservasByUsuario(String usuarioId) async {
+    final snap = await _db
+        .collection('reservas')
+        .where('usuarioId', isEqualTo: usuarioId)
+        .get();
+    final list = snap.docs.map(ReservaModel.fromFirestore).toList();
+    // Orden client-side (más reciente primero) para no requerir índice compuesto.
+    list.sort((a, b) => b.fechaInicio.compareTo(a.fechaInicio));
+    return list;
+  }
+
+  @override
   Future<void> cancelarReserva(ReservaModel reserva) async {
     final espacioRef = _db.collection('espacios').doc(reserva.espacioId);
     final reservaRef = _db.collection('reservas').doc(reserva.id);
@@ -59,6 +87,77 @@ class ReservaRemoteDatasourceImpl implements ReservaRemoteDatasource {
     await _db.runTransaction((txn) async {
       txn.update(reservaRef, {'estado': 'cancelada'});
       txn.update(espacioRef, {'estado': 'libre'});
+      txn.update(
+        _db.collection('parqueaderos').doc(reserva.parqueaderoId),
+        {'espaciosDisponibles': FieldValue.increment(1)},
+      );
     });
+  }
+
+  @override
+  Future<ReservaModel?> getReservaByQr(String qr) async {
+    final doc = await _db.collection('reservas').doc(qr).get();
+    if (!doc.exists) return null;
+    return ReservaModel.fromFirestore(doc);
+  }
+
+  @override
+  Future<void> checkIn(ReservaModel reserva) =>
+      _db.collection('reservas').doc(reserva.id).update({
+        'checkInRealizado': true,
+      });
+
+  @override
+  Future<void> checkOut(ReservaModel reserva) async {
+    final espacioRef = _db.collection('espacios').doc(reserva.espacioId);
+    final reservaRef = _db.collection('reservas').doc(reserva.id);
+
+    await _db.runTransaction((txn) async {
+      txn.update(reservaRef, {'estado': 'completada'});
+      txn.update(espacioRef, {'estado': 'libre'});
+      txn.update(
+        _db.collection('parqueaderos').doc(reserva.parqueaderoId),
+        {'espaciosDisponibles': FieldValue.increment(1)},
+      );
+    });
+  }
+
+  @override
+  Future<int> liberarReservasExpiradas() async {
+    // ponytail: barrido lazy al abrir pantallas en lugar de Cloud Functions;
+    // suficiente para el alcance académico.
+    final snap = await _db
+        .collection('reservas')
+        .where('estado', whereIn: ['pendiente', 'activa']).get();
+
+    final ahora = DateTime.now();
+    final expiradas = snap.docs.where((d) {
+      final data = d.data();
+      final checkIn = data['checkInRealizado'] as bool? ?? false;
+      final limite = (data['limiteCheckIn'] as Timestamp?)?.toDate();
+      return !checkIn && limite != null && ahora.isAfter(limite);
+    }).toList();
+
+    if (expiradas.isEmpty) return 0;
+
+    final batch = _db.batch();
+    final incrementosPorParqueadero = <String, int>{};
+    for (final doc in expiradas) {
+      final data = doc.data();
+      batch.update(doc.reference, {'estado': 'cancelada'});
+      batch.update(
+        _db.collection('espacios').doc(data['espacioId'] as String),
+        {'estado': 'libre'},
+      );
+      final pid = data['parqueaderoId'] as String;
+      incrementosPorParqueadero[pid] =
+          (incrementosPorParqueadero[pid] ?? 0) + 1;
+    }
+    incrementosPorParqueadero.forEach((pid, n) {
+      batch.update(_db.collection('parqueaderos').doc(pid),
+          {'espaciosDisponibles': FieldValue.increment(n)});
+    });
+    await batch.commit();
+    return expiradas.length;
   }
 }

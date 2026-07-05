@@ -42,13 +42,41 @@ dependencies:
   # Cámara e imágenes para escaneo
   image_picker: ^1.1.2
 
+  # QR: generación (cliente) y escaneo (admin check-in/out)
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^7.0.1
+
+  # Detección de vehículos con TensorFlow Lite (SSD MobileNet COCO)
+  tflite_flutter: ^0.11.0
+  image: ^4.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
   mocktail: ^1.0.4
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.4
 
 flutter:
   uses-material-design: true
   assets:
     - .env
+    - assets/models/
+
+# Ícono de la app (dart run flutter_launcher_icons)
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#0F766E"
+  adaptive_icon_foreground: "assets/icon/foreground.png"
+  remove_alpha_ios: true
+
+# Splash nativo sin logo de Flutter (dart run flutter_native_splash:create)
+flutter_native_splash:
+  color: "#0F766E"
+  image: "assets/icon/foreground.png"
+  android_12:
+    color: "#0F766E"
+    image: "assets/icon/foreground.png"

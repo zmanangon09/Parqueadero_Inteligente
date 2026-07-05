@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../core/utils/validators.dart';
 import '../../../domain/entities/reserva_entity.dart';
 import '../../viewmodels/pago_viewmodel.dart';
+import '../../widgets/qr_reserva_dialog.dart';
 
 const _primary = Color(0xFF0F766E);
 const _dark = Color(0xFF134E4A);
@@ -52,10 +53,15 @@ class _PagoViewState extends State<PagoView> {
           icon: const Icon(Icons.check_circle, color: _primary, size: 48),
           title: const Text('¡Pago exitoso!'),
           content: Text(
-            'Tu reserva quedó confirmada.\nTransacción: ${vm.pago?.transactionId ?? ''}',
+            'Tu reserva quedó confirmada.\nTransacción: ${vm.pago?.transactionId ?? ''}\n\n'
+            'Recuerda hacer check-in con tu QR dentro de los 10 minutos.',
             textAlign: TextAlign.center,
           ),
           actions: [
+            TextButton(
+              onPressed: () => showQrReservaDialog(context, widget.reserva),
+              child: const Text('Ver mi QR'),
+            ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();

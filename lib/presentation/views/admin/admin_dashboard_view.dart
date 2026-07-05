@@ -258,6 +258,66 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 12),
+
+                  // Botón escanear QR (check-in / check-out)
+                  Card(
+                    color: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: cs.primary.withAlpha(25),
+                        width: 1,
+                      ),
+                    ),
+                    child: InkWell(
+                      onTap: () => context.push('/admin/scan_qr'),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: cs.primary.withAlpha(20),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.qr_code_scanner_rounded,
+                                  color: cs.primary, size: 28),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Check-in / Check-out',
+                                    style: GoogleFonts.outfit(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                      color: const Color(0xFF134E4A),
+                                    ),
+                                  ),
+                                  Text(
+                                    'Escanear el QR de la reserva del cliente',
+                                    style: GoogleFonts.workSans(
+                                      fontSize: 12,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(Icons.chevron_right_rounded,
+                                color: cs.primary),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 24),
 
                   // Parqueaderos — liberar espacios
@@ -285,6 +345,8 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                         parkingName: e.value,
                         onLiberar: () =>
                             _confirmLiberar(context, vm, e.key, e.value),
+                        onEvaluar: () =>
+                            context.push('/admin/evaluate/${e.key}'),
                       ),
                     ),
                   const SizedBox(height: 24),
@@ -352,10 +414,12 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
 class _ParkingLiberarItem extends StatelessWidget {
   final String parkingName;
   final VoidCallback onLiberar;
+  final VoidCallback onEvaluar;
 
   const _ParkingLiberarItem({
     required this.parkingName,
     required this.onLiberar,
+    required this.onEvaluar,
   });
 
   @override
@@ -382,6 +446,12 @@ class _ParkingLiberarItem extends StatelessWidget {
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
+            ),
+            IconButton(
+              onPressed: onEvaluar,
+              tooltip: 'Evaluar espacios con cámara',
+              icon: const Icon(Icons.camera_alt_rounded,
+                  size: 20, color: Color(0xFF0F766E)),
             ),
             TextButton.icon(
               onPressed: onLiberar,
