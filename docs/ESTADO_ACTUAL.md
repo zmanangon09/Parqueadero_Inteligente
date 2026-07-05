@@ -1,6 +1,6 @@
 # Estado actual del proyecto — Control Inteligente de Parqueaderos
 
-**Última actualización:** 2026-07-03
+**Última actualización:** 2026-07-04
 
 ## Repositorio
 
@@ -24,20 +24,38 @@
 | 4 — Reserva (transacción Firestore, no-show modelado) | `docs/plans/modulo4-reserva.md` | `docs/execution/modulo4-reserva.md` | ✓ Completo |
 | 5 — Pago (simulado, estilo Stripe test-mode) | `docs/plans/modulo5-pago.md` | `docs/execution/modulo5-pago.md` | ✓ Completo (falta prueba manual E2E) |
 | Admin — Panel de administración (registro de parqueaderos + dashboard) | — (trabajo de Andrea) | `Cambios_administrador.md` (raíz) | ✓ Integrado vía PR #1 |
+| 6 — Check-in/Check-out (QR + no-show) | `docs/plans/modulo6-checkin-checkout.md` | `docs/execution/modulo6-checkin-checkout.md` | ✓ Completo |
+| 7 — Historial (activas + pasadas) | `docs/plans/modulo7-historial.md` | `docs/execution/modulo7-historial.md` | ✓ Completo |
+| 8 — Perfil (vehículos + foto en Storage) | `docs/plans/modulo8-perfil.md` | `docs/execution/modulo8-perfil.md` | ✓ Completo |
+| TFLite real + evaluación por cámara (admin) | — | `docs/execution/tflite-y-evaluacion-camara.md` | ✓ Completo (inferencia real probada en test) |
+| Ícono de app + splash propios | — | ver "Ícono y splash" abajo | ✓ Completo |
 
 **Flujo de trabajo usado en cada módulo:** presentar plan de 7 puntos → esperar aprobación del usuario ("lo apruebo") → implementar → correr tests → `dart analyze` sin errores → commit (sin atribución a Claude) → push.
 
 ## Pendiente
 
-- **Módulo 6 — Check-in/Check-out (QR)**: siguiente paso. Aquí se activa la **liberación automática del no-show** — si no se hace check-in dentro de los 10 min (`reserva.limiteCheckIn`), el espacio vuelve a `libre`. Los campos `limiteCheckIn` y `checkInRealizado` ya están modelados en el Módulo 4. Nota: el Módulo 5 dejó reservas que pueden quedar en `pendiente` sin pagar (el espacio sigue retenido); su liberación por timeout también cae aquí.
-- **Módulo 8 — Perfil**: agregar vehículos a `usuarios/{uid}.vehiculos`. Mientras no exista, el sheet de reserva usa un campo de texto de placa como fallback.
+- **Prueba manual E2E en dispositivo/emulador**: flujo completo cliente (reserva → pago `4242…` → QR) + admin (escanear QR check-in/out, evaluar ocupación con cámara). Todo lo automatizable ya está cubierto por tests.
+- **Firebase Storage**: para la foto de perfil hace falta que exista el bucket default en el proyecto `smart-parking-mrcc` (Console → Storage). Si no existe, la subida muestra error y el resto del perfil funciona.
 
-## Estado técnico verificado (2026-07-03, tras Módulo 5 - Pago)
+## Estado técnico verificado (2026-07-04, tras Módulos 6-8 + TFLite + íconos)
 
-- `flutter test` → **30/30 tests pasando** (18 previos + 8 validadores de tarjeta + 4 del `ProcesarPagoUseCase`)
-- `flutter analyze` → **0 errores**. Avisos no bloqueantes: 2 `info` por `Radio` deprecado (`groupValue`/`onChanged`) en `lib/presentation/views/admin/review_parqueadero_view.dart` + 1 `warning` preexistente (`tLejano` en el test del Módulo 2)
-- **Pendiente:** prueba manual end-to-end del flujo de pago en dispositivo/emulador (con tarjetas `4242…` éxito / `4000…0002` declinada)
-- `git status` → working tree limpio
+- `flutter test` → **40/40 tests pasando** (30 previos + 5 `ProcesarQrUseCase` + 3 `ActualizarOcupacionUseCase` + 2 de **inferencia TFLite real** sobre `test/fixtures/vehiculos.jpg`)
+- `flutter analyze` → **0 errores** (mismos 3 avisos preexistentes no bloqueantes)
+- Para correr el test de TFLite en Windows host: `libtensorflowlite_c-win.dll` instalado en `<flutter>/bin/cache/artifacts/engine/windows-x64/blobs/` (en otra máquina, bajar de am15h/tflite_flutter_plugin releases v0.5.0)
+
+## Ícono y splash
+
+- Arte generado en `assets/icon/` (letrero "P" blanco sobre teal `#0F766E`): `icon.png` (completo) y `foreground.png` (transparente, para adaptive icon y splash).
+- `flutter_launcher_icons` (ícono launcher Android/iOS, adaptive con fondo teal) y `flutter_native_splash` (splash teal con el logo, incluida variante Android 12) — config en `pubspec.yaml`; regenerar con `dart run flutter_launcher_icons` y `dart run flutter_native_splash:create`.
+- Nombre visible de la app: **"Parqueadero Inteligente"** (AndroidManifest `android:label` + iOS `CFBundleDisplayName`).
+
+## Módulos 6-8 + TFLite (resumen rápido)
+
+- **QR**: contenido = id del documento de la reserva; se escribe en `qrCode` al crearla. Admin escanea (`/admin/scan_qr`, mobile_scanner); cliente lo ve en `/historial` o tras pagar (qr_flutter).
+- **No-show**: barrido lazy `LiberarReservasExpiradasUseCase` al abrir dashboard admin e historial; también se resuelve al escanear un QR vencido. `espaciosDisponibles` ahora se mantiene con `FieldValue.increment` en crear/cancelar/check-out/barrido.
+- **Historial** `/historial` y **Perfil** `/perfil` accesibles desde la barra superior del Home (iconos recibo y persona).
+- **TFLite real**: `detector_service.dart` usa SSD MobileNet v1 COCO cuantizado (`assets/models/detect.tflite`); detecta `car|truck|bus|motorcycle` score ≥ 0.5. El mock ya no existe.
+- **Evaluar ocupación (admin)**: icono de cámara por parqueadero en el dashboard → `/admin/evaluate/:id` → foto → conteo de vehículos → propuesta (reservados intactos) → batch update.
 
 ## Arquitectura (Clean Architecture + MVVM + Provider)
 
@@ -45,7 +63,7 @@
 - **Data**: datasources (Firebase Auth, Firestore, Geolocator), modelos `fromFirestore`/`toFirestore`, implementaciones de repositorios
 - **Presentation**: ViewModels (`ChangeNotifier`, sin acceso directo a Firebase), Views, Widgets reutilizables
 - **DI**: `get_it` en `lib/core/di/injection.dart`
-- **Navegación**: `go_router` con `refreshListenable` en `lib/core/router/app_router.dart`, rutas: `/login`, `/register`, `/home`, `/parking/:id`, `/pago/:reservaId`, `/admin_dashboard`, `/admin/add_parking`, `/admin/scan_parking`, `/admin/review_parking`. El `redirect` es por rol: si `isAdmin` → `/admin_dashboard`; si un cliente entra a una ruta `/admin/*` → lo devuelve a `/home`.
+- **Navegación**: `go_router` con `refreshListenable` en `lib/core/router/app_router.dart`, rutas: `/login`, `/register`, `/home`, `/parking/:id`, `/pago/:reservaId`, `/historial`, `/perfil`, `/admin_dashboard`, `/admin/add_parking`, `/admin/scan_parking`, `/admin/review_parking`, `/admin/scan_qr`, `/admin/evaluate/:id`. El `redirect` es por rol: si `isAdmin` → `/admin_dashboard`; si un cliente entra a una ruta `/admin/*` → lo devuelve a `/home`.
 - **Tema**: Material 3, paleta Trust Teal (`#0F766E` primario), fuentes Outfit (títulos) + Work Sans (cuerpo)
 
 ## Configuración de entorno (necesaria en máquina nueva)
