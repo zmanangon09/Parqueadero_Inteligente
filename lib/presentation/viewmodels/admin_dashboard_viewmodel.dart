@@ -91,4 +91,13 @@ class AdminDashboardViewModel extends ChangeNotifier {
   }
 
   Future<void> refresh() => init();
+
+  /// Libera los espacios del parqueadero y recarga el dashboard.
+  /// Devuelve `null` si tuvo éxito, o el mensaje de error.
+  Future<String?> liberarEspacios(String parqueaderoId) async {
+    final res = await _parkingRepo.liberarEspacios(parqueaderoId);
+    final error = res.fold((f) => f.message, (_) => null);
+    if (error == null) await refresh();
+    return error;
+  }
 }

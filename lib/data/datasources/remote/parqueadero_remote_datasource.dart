@@ -7,6 +7,7 @@ abstract class ParqueaderoRemoteDatasource {
   Future<ParqueaderoModel> getById(String id);
   Future<void> saveParqueadero(ParqueaderoModel parqueadero, List<EspacioModel> espacios);
   Future<int> getParqueaderosCount();
+  Future<void> liberarEspacios(String parqueaderoId);
 }
 
 class ParqueaderoRemoteDatasourceImpl implements ParqueaderoRemoteDatasource {
@@ -73,5 +74,34 @@ class ParqueaderoRemoteDatasourceImpl implements ParqueaderoRemoteDatasource {
   Future<int> getParqueaderosCount() async {
     final snap = await _db.collection('parqueaderos').count().get();
     return snap.count ?? 0;
+  }
+
+  @override
+  Future<void> liberarEspacios(String parqueaderoId) async {
+    final espaciosSnap = await _db
+        .collection('espacios')
+        .where('parqueaderoId', isEqualTo: parqueaderoId)
+        .get();
+    final reservasSnap = await _db
+        .collection('reservas')
+        .where('parqueaderoId', isEqualTo: parqueaderoId)
+        .get();
+
+    final batch = _db.batch();
+    for (final doc in espaciosSnap.docs) {
+      batch.update(doc.reference, {'estado': 'libre'});
+    }
+    // Filtro client-side para no requerir índice compuesto (parqueaderoId + estado).
+    for (final doc in reservasSnap.docs) {
+      final estado = doc.data()['estado'];
+      if (estado == 'activa' || estado == 'pendiente') {
+        batch.update(doc.reference, {'estado': 'cancelada'});
+      }
+    }
+    batch.update(
+      _db.collection('parqueaderos').doc(parqueaderoId),
+      {'espaciosDisponibles': espaciosSnap.docs.length},
+    );
+    await batch.commit();
   }
 }

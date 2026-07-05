@@ -51,6 +51,47 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     );
   }
 
+  Future<void> _confirmLiberar(
+    BuildContext context,
+    AdminDashboardViewModel vm,
+    String id,
+    String nombre,
+  ) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Liberar espacios',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+        content: Text(
+          '¿Liberar todos los espacios de "$nombre" y cancelar sus reservas activas?',
+          style: GoogleFonts.workSans(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Liberar'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !context.mounted) return;
+
+    final error = await vm.liberarEspacios(id);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error ?? 'Espacios liberados.'),
+        backgroundColor:
+            error == null ? const Color(0xFF0F766E) : const Color(0xFFDC2626),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authVm = context.watch<AuthViewModel>();
@@ -219,6 +260,35 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                   ),
                   const SizedBox(height: 24),
 
+                  // Parqueaderos — liberar espacios
+                  Text(
+                    'Parqueaderos',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      color: const Color(0xFF134E4A),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (vm.parkingNames.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'No hay parqueaderos registrados.',
+                        style: GoogleFonts.workSans(
+                            color: Colors.black38, fontSize: 14),
+                      ),
+                    )
+                  else
+                    ...vm.parkingNames.entries.map(
+                      (e) => _ParkingLiberarItem(
+                        parkingName: e.value,
+                        onLiberar: () =>
+                            _confirmLiberar(context, vm, e.key, e.value),
+                      ),
+                    ),
+                  const SizedBox(height: 24),
+
                   // Historial de reservas
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -274,6 +344,52 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _ParkingLiberarItem extends StatelessWidget {
+  final String parkingName;
+  final VoidCallback onLiberar;
+
+  const _ParkingLiberarItem({
+    required this.parkingName,
+    required this.onLiberar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 6, 8, 6),
+        child: Row(
+          children: [
+            const Icon(Icons.local_parking_rounded,
+                size: 20, color: Color(0xFF0F766E)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                parkingName,
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: const Color(0xFF134E4A),
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: onLiberar,
+              icon: const Icon(Icons.lock_open_rounded, size: 18),
+              label: const Text('Liberar'),
+            ),
+          ],
+        ),
       ),
     );
   }

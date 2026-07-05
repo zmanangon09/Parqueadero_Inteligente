@@ -84,6 +84,16 @@ class ParqueaderoRepositoryImpl implements ParqueaderoRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, Unit>> liberarEspacios(String parqueaderoId) async {
+    try {
+      await _datasource.liberarEspacios(parqueaderoId);
+      return const Right(unit);
+    } catch (e) {
+      return Left(ServerFailure('Error al liberar espacios: $e'));
+    }
+  }
+
   double _haversineKm(double lat1, double lng1, double lat2, double lng2) {
     const r = 6371.0;
     final dLat = _rad(lat2 - lat1);

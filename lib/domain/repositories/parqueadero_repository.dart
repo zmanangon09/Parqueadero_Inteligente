@@ -18,4 +18,8 @@ abstract class ParqueaderoRepository {
   );
 
   Future<Either<Failure, int>> getParqueaderosCount();
+
+  /// Libera todos los espacios de un parqueadero (`estado → libre`), cancela
+  /// sus reservas activas/pendientes y ajusta `espaciosDisponibles`.
+  Future<Either<Failure, Unit>> liberarEspacios(String parqueaderoId);
 }
